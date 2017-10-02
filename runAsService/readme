@@ -1,0 +1,21 @@
+So, assuming that you're running on AWS linux you need to do the following:
+
+install pocketmine
+
+Get it from https://www.pocketmine.net/ and follow the linux instructions
+
+edit minecraftpe with your favourite editor so that it points to your minecraft install directory
+
+copy minecraftpe to /etc/init.d (which is where service scripts live in AWS linux)
+	cp minecraftpe /etc/init.d
+
+set permissions on minecraftpe
+	chmod +x minecraftpe 
+
+try and start it...
+
+	service minecraftpe start
+
+if that works, then set start to automatic:
+
+	chkconfig minecraftpe on

@@ -1,0 +1,65 @@
+#!/bin/sh
+#	PocketMine Run as a Service scriptt
+# 	Only tested on AWS linux
+#	
+#	What do you need to know?
+#
+#	OK, so you need to have a user called minecraft
+#	You can do this with the command
+#		useradd minecraft
+#	You also need to have installed pocketmine ;)
+#	and know where you installed it
+
+. /etc/rc.d/init.d/functions
+
+# 	Still here? Great. Set up a pointer to the Pocketmine install directory
+#	Use the same path for LOG_FILE and LOCK_FILE 
+
+DAEMON="/minecraft/pe/"
+SCRIPT="./start.sh"
+LOG_FILE="/minecraft/pe/daemon.log"
+USER="minecraft" 
+LOCK_FILE="/minecraft/pe/minecraftPE.Locked"
+ 
+do_start()
+{
+        if [ ! -f "$LOCK_FILE" ] ; then
+                echo -n $"Starting $SERVER: "
+                runuser -l "$USER" -c "$DAEMON$SCRIPT >> $LOG_FILE &" && echo_success || echo_failure
+                RETVAL=$?
+                echo
+                [ $RETVAL -eq 0 ] && touch $LOCK_FILE
+        else
+                echo "$SERVER is locked."
+                RETVAL=1
+        fi
+}
+do_stop()
+{
+        echo -n $"Stopping $SERVER: "
+        #pid=`ps -aefw | grep "$DAEMON$Script" | grep -v " grep " | awk '{print $2}'`
+	pid=`ps -u minecraft | grep "php" | grep -v " grep " | awk '{print $1}'`
+
+        kill -9 $pid > /dev/null 2>&1 && echo_success || echo_failure
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f $LOCK_FILE
+}
+ 
+case "$1" in
+        start)
+                do_start
+                ;;
+        stop)
+                do_stop
+                ;;
+        restart)
+                do_stop
+                do_start
+                ;;
+        *)
+                echo "Usage: $0 {start|stop|restart}"
+                RETVAL=1
+esac
+ 
+exit $RETVAL

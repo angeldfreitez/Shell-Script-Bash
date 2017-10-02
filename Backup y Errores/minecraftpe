@@ -1,0 +1,86 @@
+#!/bin/sh
+#	PocketMine Run as a Service scriptt
+# 	Only tested on AWS linux
+#	
+#	What do you need to know?
+#
+#	OK, so you need to have a user called minecraft
+#	You can do this with the command
+#		useradd minecraft
+#	You also need to have installed pocketmine ;)
+#	and know where you installed it
+
+# 	Still here? Great. Set up a pointer to the Pocketmine install directory
+#	Use the same path for LOG_FILE and LOCK_FILE 
+
+
+POCKETMINE_PATH="/home/daniel/Minecraft-PE"
+START_OPTS="--start --background --pidfile /var/run/pocketmine.pid --make-pidfile --exec $POCKETMINE_PATH/start.sh"
+STOP_OPTS="--stop --pidfile /var/run/pocketmine.pid"
+ 
+do_start()
+{
+        echo -n "Starting PocketMine-MP: "
+        start-stop-daemon $START_OPTS > /dev/null
+        echo "ok."
+}
+
+do_stop()
+{
+        echo -n "Stopping PocketMine-MP: "
+        start-stop-daemon $STOP_OPTS
+        echo "ok."
+        rm -f /var/run/pocketmine.pid
+}
+
+do_rcon()
+{
+        echo "Server reboot at $(date)" >> /home/daniel/Minecraft-PE/srvChk.log
+
+        #--------------ESTO ES PARA MOSTRAR UN MENSAJE EN EL SERVIDOR-----------------
+        /home/daniel/Minecraft-PE/./mcrcon -P 25575 -H 127.0.0.1 -p 123 "broadcast Server scheduled reboot in 10 seconds"
+        sleep 7
+        /home/daniel/Minecraft-PE/./mcrcon -P 25575 -H 127.0.0.1 -p 123 "broadcast Server scheduled reboot in 3 seconds"i
+        sleep 3
+        /home/daniel/Minecraft-PE/./mcrcon -P 25575 -H 127.0.0.1 -p 123 "broadcast Server scheduled reboot in NOW"
+
+        #Para el Servidor
+        /etc/init.d/minecraftpe stop
+        #Guarda la Fecha de Parada
+        echo "Stopped at $(date)" >> /home/daniel/Minecraft-PE/srvChk.log
+        sleep 10
+        rm -r -f /home/daniel/Minecraft-PE/minecraftPE.Locked
+        
+        #Limpia el SERVER.LOG
+        cat /dev/null > /home/daniel/Minecraft-PE/server.log
+
+        echo "log removed at $(date)" >> /home/daniel/Minecraft-PE/srvChk.log
+        #INICIA EL SERVIDOR
+        /etc/init.d/minecraftpe start
+        echo "Restart complete at $(date)" >> /home/daniel/Minecraft-PE/srvChk.log      
+}
+
+
+ 
+case "$1" in
+        start)
+                do_start
+                ;;
+        stop)
+                do_stop
+                ;;
+        restart)
+                do_stop
+                do_start
+                ;;
+
+        rcon_p)
+                do_rcon
+                ;;                
+
+        *)
+                echo "Usage: $0 {start|stop|restart|rcon_p}"
+                RETVAL=1
+esac
+ 
+exit $RETVAL

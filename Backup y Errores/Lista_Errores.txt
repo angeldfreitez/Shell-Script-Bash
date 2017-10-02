@@ -1,0 +1,6 @@
+Crashed while crashing, killing process
+Error: Call to undefined method pocketmine\network\rcon\RCONInstance::kill()
+RakLib crashed!
+RakLib crashed!
+Crashed while crashing, killing process
+Error: Call to undefined method pocketmine\network\rcon\RCONInstance::kill()

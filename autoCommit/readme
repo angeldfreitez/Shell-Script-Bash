@@ -1,0 +1,13 @@
+so, I use this script to autocommit any changes to my pocketmine install
+
+i do this once an hour, all day, every day
+
+as we all know, griefing can be a huge problem with minecraft
+
+if you need to rollback your server you can simply do
+
+git reset --hard [commitHash from the bitbucket website]
+
+there's also a script I use to reset everything after doing the git reset
+
+it's in this directory and called postReset.sh
